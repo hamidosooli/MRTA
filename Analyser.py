@@ -1,3 +1,5 @@
+import numpy as np
+
 from Agent import agent
 from Task import task
 
@@ -27,6 +29,19 @@ room4 = task(3, [19, 19], 8*4, ['SPLASH'], ['navigation', 'observation', 'take-i
 cap_set = ['navigation', 'turn-valve', 'observation',
            'take-image', 'refuel', 'communicate-data',
            'check-temperature', 'valve-inspection', 'check-pressure']
+
+
+def robot_distribution(agents, tasks):
+    for agent in agents:
+        id = agent.tasks[0]
+        min_dist = np.linalg.norm(np.subtract(tasks[agent.tasks[0]].pos, agent.pos))
+        for task_id in agent.tasks:
+            dist = np.linalg.norm(np.subtract(tasks[task_id].pos, agent.pos))
+            if dist < min_dist:
+                min_dist = dist
+                id = task_id
+        agent.tasks = [id]
+        print(f'Agent {agent.id} is nearer to task {agent.tasks}')
 
 
 def capability_analyser(capability_set, agents, tasks):
@@ -63,7 +78,8 @@ def sensor_task(agents, tasks):
 
 
 assgn = sensor_task([robot1, robot2, robot3], [room1, room2, room3, room4])
-
+print(assgn)
 capability_analyser(cap_set, [robot1, robot2, robot3], [room1, room2, room3, room4])
 
+robot_distribution([robot1, robot2, robot3], [room1, room2, room3, room4])
 pass
