@@ -1,0 +1,1 @@
+(robot_can_act husky0 wpg31)
