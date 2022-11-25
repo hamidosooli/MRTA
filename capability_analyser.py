@@ -32,8 +32,7 @@ def victim_clustering(num_clusters, victim_list):
     # assign victim into the relevant cluster
     for cluster_idx, cluster in enumerate(clusters):
         victim_list[cluster_idx].cluster_id = cluster
-        victim_list[cluster_idx].cluster_dist = np.linalg.norm(np.subtract(victim_list[cluster_idx].pos,
-                                                                           clusters_coord[cluster]))
+        victim_list[cluster_idx].cluster_dist = np.subtract(victim_list[cluster_idx].pos, clusters_coord[cluster])
 
     return clusters, clusters_coord
 
@@ -62,9 +61,10 @@ def robot_distribution(robot_list, victim_list, clusters, clusters_coord):
                     victim_list[cluster_idx].rescued = True
                     victim_list_update.remove(victim_list[cluster_idx])
                 robot.pos = clusters_coord[cluster]
-
+        Manhattan_to_Euclidean = np.linalg.norm(np.asarray(robot.tasks_init_dist), axis=1)
         # Sort the assignment on the basis of distance to the cluster coordination
-        robot.tasks_init = [victim_id for _, victim_id in sorted(zip(robot.tasks_init_dist, robot.tasks_init))]
+        robot.tasks_init = [victim_id for _, victim_id in sorted(zip(Manhattan_to_Euclidean,
+                                                                     robot.tasks_init))]
 
     return victim_list_update
 
