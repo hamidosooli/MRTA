@@ -16,9 +16,13 @@ class Robot:
         self.tasks_init_dist = []
         self.tasks_final = []
 
+        self.make_span = []
+        self.abort_time = 0.0
+        self.travel_time = 0.0
+
     def travel_cost(self):
         X_i = np.linalg.norm(np.subtract(self.tasks_init_dist[0], self.init_pos))
         X_f = np.linalg.norm(np.subtract(self.tasks_init_dist[-1], self.tasks_init_dist[0]))
         T_i = X_i / self.speed
         T_f = X_f / self.speed
-        return T_f - T_i
+        self.travel_time = T_f - T_i

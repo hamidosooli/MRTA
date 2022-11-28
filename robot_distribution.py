@@ -36,8 +36,7 @@ def weight_calc(robot_list, clusters):
         for victim_id, cluster_id in enumerate(clusters):
             if victim_id in robot.tasks:
                 robot.w_rc[cluster_id] += 1
-        with np.errstate(divide='ignore'):
-            cost[robot.id, :] = 1 / robot.w_rc
+        cost[robot.id, :] = -robot.w_rc
     return cost
 
 
@@ -48,11 +47,14 @@ def robot_distribution(robot_list, victim_list, clusters, clusters_coord):
     for robot_idx, robot in enumerate(robot_list):
         for cluster_idx, cluster in enumerate(clusters):
             if cluster == clusters_opt[robot_idx]:
-                if victim_list[cluster_idx].id in robot.tasks:  # check for the ability to rescue (not sure about this!)
+                if victim_list[cluster_idx].id in robot.tasks:  # check for the ability to rescue
+                    # Assign the victims to the robot for rescue
                     robot.tasks_init.append(victim_list[cluster_idx].id)
                     robot.tasks_init_dist.append(victim_list[cluster_idx].cluster_dist)
+                    # Update the list of the remaining victims and set the victim's rescue flag True
                     victim_list[cluster_idx].rescued = True
                     victim_list_update.remove(victim_list[cluster_idx])
+                # Send the robot to cluster's center
                 robot.pos = clusters_coord[cluster]
         Manhattan_to_Euclidean = np.linalg.norm(np.asarray(robot.tasks_init_dist), axis=1)
         # Sort the assignment on the basis of distance to the cluster coordination
