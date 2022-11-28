@@ -23,9 +23,9 @@ def time_cost(robot_list, victims_new, alpha=.2, beta=.25, gamma=.55):
     for robot in robot_list:
         for victim_id, victim in enumerate(victims_new):
             if victim.id in robot.tasks: # Check with the capability analyser output
-                cost[robot.id, victim_id] = (gamma * np.max(robot.make_span) +
-                                             alpha * robot.travel_time +
-                                             beta * robot.abort_time)
+                cost[robot.id, victim_id] = ((gamma * np.max(robot.make_span)) +
+                                             (alpha * robot.travel_time) +
+                                             (beta * robot.abort_time / robot.num_sensors))
             else:
                 cost[robot.id, victim_id] = 1e20
 

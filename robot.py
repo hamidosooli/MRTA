@@ -11,6 +11,7 @@ class Robot:
         self.algorithms = algorithms
         self.competency = competency
         self.capabilities = capabilities
+        self.num_sensors = len(capabilities)
         self.tasks = []
         self.tasks_init = []
         self.tasks_init_dist = []
