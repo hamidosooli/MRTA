@@ -22,7 +22,7 @@ def time_cost(robot_list, victims_new, alpha=.2, beta=.25, gamma=.55):
 
     for robot in robot_list:
         for victim_id, victim in enumerate(victims_new):
-            if victim.id in robot.tasks: # Check with the capability analyser output
+            if victim.id in robot.tasks:  # Check with the capability analyser output
                 cost[robot.id, victim_id] = ((gamma * np.max(robot.make_span)) +
                                              (alpha * robot.travel_time) +
                                              (beta * robot.abort_time / robot.num_sensors))
@@ -35,7 +35,6 @@ def time_cost(robot_list, victims_new, alpha=.2, beta=.25, gamma=.55):
 def final_allocation(robot_list, victims_new):
     cost = time_cost(robot_list, victims_new, alpha=.2, beta=.25, gamma=.55)
     robots_opt, victims_opt = linear_sum_assignment(cost)
-    print(cost)
     for victim, robot in enumerate(robots_opt):
         robot_list[robot].tasks_final.append(victims_new[victims_opt[victim]].id)
         victims_new[victims_opt[victim]].rescued = True

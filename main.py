@@ -48,13 +48,13 @@ fig, ax = plt.subplots(1, 1)
 for idx, cluster in enumerate(clusters_coord):
     ax.scatter(cluster[0], cluster[1], c="red", marker="^")
     ax.text(cluster[0], cluster[1], f'cluster id: {idx}')
-print(clusters_coord, clusters)
+# print(clusters_coord, clusters)
 for robot in robots:
     print(robot.tasks_init)
 for robot in robots:
     print(robot.tasks_final)
 for victim in victims:
-    print(victim.rescued)
+    # print(victim.rescued)
     ax.scatter(victim.pos[0], victim.pos[1], c="blue", marker="s")
     ax.text(victim.pos[0], victim.pos[1], f'victim id: {victim.id}')
 # ax.set_xlim(0, 20)

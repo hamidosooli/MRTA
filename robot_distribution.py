@@ -28,7 +28,7 @@ def weight_calc(robot_list, clusters):
     """
     :param robot_list: list of the robot objects (rescue team)
     :param clusters: list of  the clusters calculated by victim_clustering
-    :return: the cost that is one over the number of victims each robot can save at each cluster
+    :return: the cost that is the opposite of the number of victims each robot can save at each cluster
     """
     num_clusters = np.max(clusters) + 1
     cost = np.zeros((len(robot_list), num_clusters))
