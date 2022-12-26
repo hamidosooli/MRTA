@@ -12,10 +12,15 @@ class Robot:
         self.competency = competency
         self.capabilities = capabilities
         self.num_sensors = len(capabilities)
-        self.tasks = []
-        self.tasks_init = []
-        self.tasks_init_dist = []
-        self.tasks_final = []
+
+        self.tasks = []  # Assignment based on the capabilities
+        self.tasks_full = []  # Assignment based on full satisfaction of the victims requirements
+
+        self.tasks_init = []  # Assignment based on the number of tasks in the cluster
+        self.tasks_init_dist = []  # Assigned task distance to the cluster center
+
+        self.tasks_final = []  # Final Assignment based on the robots busy time
+        self.tasks_finalized = []
 
         self.make_span = []
         self.abort_time = 0.0
@@ -27,3 +32,19 @@ class Robot:
         T_i = X_i / self.speed
         T_f = X_f / self.speed
         self.travel_time = T_f - T_i
+
+    def reset(self):
+
+        self.tasks = []  # Assignment based on the capabilities
+        self.tasks_full = []  # Assignment based on full satisfaction of the victims requirements
+
+        self.tasks_init = []  # Assignment based on the number of tasks in the cluster
+        self.tasks_init_dist = []  # Assigned task distance to the cluster center
+
+        self.tasks_final = []  # Final Assignment based on the robots busy time
+
+        self.make_span = []
+        self.abort_time = 0.0
+        self.travel_time = 0.0
+
+        self.w_rc = np.zeros_like(self.w_rc)
