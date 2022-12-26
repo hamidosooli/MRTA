@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial import Voronoi, voronoi_plot_2d
 
 from capability_analyser import capability_analyser, assistance
-from robot_distribution import victim_clustering, robot_distribution
+from robot_distribution import task_clustering, robot_distribution
 
 from robot import Robot
 from victim import Victim
@@ -43,7 +43,7 @@ print(f'Robot 0 tasks based on full satisfaction of the capabilities: {r0.tasks_
       f'Robot 2 tasks based on full satisfaction of the capabilities: {r2.tasks_full}\n'
       f'Robot 3 tasks based on full satisfaction of the capabilities: {r3.tasks_full}\n')
 
-clusters, clusters_coord = victim_clustering(num_clusters, victims)
+clusters, clusters_coord = task_clustering(num_clusters, victims)
 victims_new = robot_distribution(robots, victims, clusters, clusters_coord)
 
 victims_new = final_allocation(robots, victims, victims_new)
@@ -56,8 +56,8 @@ for idx, cluster in enumerate(clusters_coord):
 for robot in robots:
     print(f'{robot.id} --> Step 1: {robot.tasks_init}, Step 2: {robot.tasks_final}, Step 3: {robot.tasks_finalized}')
 
-for victim in victims_new:
-    print(victim.id, victim.rescued, victim.capabilities, victim.candidates)
+# for victim in victims_new:
+#     print(victim.id, victim.rescued, victim.capabilities, victim.candidates)
 
 for victim in victims:
     print(victim.rescued)
