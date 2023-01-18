@@ -36,7 +36,7 @@ def time_cost(robot_list, tasks_new, alpha=.2, beta=.25, gamma=.55):
 def final_allocation(robot_list, task_list, tasks_new):
 
     make_span_calc(robot_list, task_list)
-    cost = time_cost(robot_list, tasks_new, alpha=.2, beta=.25, gamma=.55)
+    cost = time_cost(robot_list, tasks_new, alpha=.0, beta=.99, gamma=.01)
     robots_opt, tasks_opt = linear_sum_assignment(cost)
     for task, robot in enumerate(robots_opt):
         robot_list[robot].tasks_final.append(tasks_new[tasks_opt[task]].id)
