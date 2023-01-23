@@ -1,4 +1,5 @@
 import numpy as np
+from a_star import AStarPlanner
 from scipy.optimize import linear_sum_assignment
 
 
@@ -54,7 +55,10 @@ def final_allocation(robot_list, task_list, tasks_new):
     return tasks_new
 
 
-def finalizer(robot_list, task_list_new, task_list):
+def finalizer(robot_list, task_list_new, task_list, walls_x, walls_y):
+    grid_size = 1  # [m]
+    robot_radius = .5  # [m]
+    a_star = AStarPlanner(walls_x, walls_y, grid_size, robot_radius)
     for task in task_list:
         for idx, status in enumerate(task.rescued):
             if not status:
@@ -68,9 +72,10 @@ def finalizer(robot_list, task_list_new, task_list):
                 temp = np.inf
                 id = np.nan
                 for candid_id, d in enumerate(dist):
-                    euc_dist = np.linalg.norm(np.subtract(d, task.pos))
-                    if euc_dist < temp:
-                        temp = euc_dist.copy()
+                    rx, ry = a_star.planning(d[0], d[1], task.pos[0], task.pos[1])
+                    ManhattanDist = len(rx)
+                    if ManhattanDist < temp:
+                        temp = ManhattanDist
                         id = task.candidates[idx][candid_id]
                 robot_list[id].tasks_finalized.append(task.id)
                 task.rescued[idx] = True

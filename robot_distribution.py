@@ -41,13 +41,15 @@ def task_clustering(num_clusters, task_list, walls_x, walls_y):
 
         clusters_coord[cluster_idx] = int_clusters_coord
 
-    a_star = AStarPlanner(walls_y, walls_x, 1., .5)
-    # assign task into the relevant cluster
-    for cluster_idx, cluster in enumerate(clusters):
-        task_list[cluster_idx].cluster_id = cluster
-        rx, ry = a_star.planning(clusters_coord[cluster][1], clusters_coord[cluster][0],
-                                 task_list[cluster_idx].pos[0], task_list[cluster_idx].pos[1])
-        task_list[cluster_idx].cluster_dist = [[y, x] for x, y in zip(rx[::-1], ry[::-1])]
+    grid_size = 1  # [m]
+    robot_radius = .5  # [m]
+    a_star = AStarPlanner(walls_x, walls_y, grid_size, robot_radius)
+    # assign robot into the relevant cluster
+    for idx, cluster_id in enumerate(clusters):
+        task_list[idx].cluster_id = cluster_id
+        rx, ry = a_star.planning(clusters_coord[cluster_id][0], clusters_coord[cluster_id][1],
+                                 task_list[idx].pos[0], task_list[idx].pos[1])
+        task_list[idx].cluster_dist = [[x, y] for x, y in zip(rx[::-1], ry[::-1])]
     return clusters, clusters_coord
 
 
