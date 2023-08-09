@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Robot:
-    def __init__(self, id, pos, speed, algorithms, num_clusters, competency, capabilities):
+    def __init__(self, id, pos, speed, algorithms, num_clusters, competency, capabilities, cap_list):
         self.id = id
         self.init_pos = pos
         self.pos = pos
@@ -11,6 +11,7 @@ class Robot:
         self.algorithms = algorithms
         self.competency = competency
         self.capabilities = capabilities
+        self.vectorized_cap = [1 if cap in self.capabilities else 0 for cap in cap_list]
         self.num_sensors = len(capabilities)
 
         self.tasks = []  # Assignment based on the capabilities
@@ -48,3 +49,7 @@ class Robot:
         self.travel_time = 0.0
 
         self.w_rc = np.zeros_like(self.w_rc)
+
+
+    def cap_list(self):
+        self.capabilities

@@ -13,9 +13,13 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
-# from gridworld_multi_agent1_1 import animate
+from gridworld_multi_agent1_1 import animate
 show_animation = False
+from victim import Victim
 
+capabilities = ['FirstAids', 'DebrisRemover', 'OxygenCylinder', 'Defuser', 'Manipulator', 'FireExtinguisher']
+make_span = {'FirstAids': 15, 'DebrisRemover': 30, 'OxygenCylinder': 20,
+             'Defuser': 10, 'Manipulator': 45, 'FireExtinguisher': 35}
 
 class AStarPlanner:
 
@@ -188,33 +192,54 @@ class AStarPlanner:
         return True
 
     def calc_obstacle_map(self, ox, oy):
+        if len(ox) == 0 and len(oy) == 0:
+            self.min_x = 0
+            self.min_y = 0
+            self.max_x = 19
+            self.max_y = 19
+            print("min_x:", self.min_x)
+            print("min_y:", self.min_y)
+            print("max_x:", self.max_x)
+            print("max_y:", self.max_y)
 
-        self.min_x = round(min(ox))
-        self.min_y = round(min(oy))
-        self.max_x = round(max(ox))
-        self.max_y = round(max(oy))
-        print("min_x:", self.min_x)
-        print("min_y:", self.min_y)
-        print("max_x:", self.max_x)
-        print("max_y:", self.max_y)
+            self.x_width = round((self.max_x - self.min_x) / self.resolution)
+            self.y_width = round((self.max_y - self.min_y) / self.resolution)
+            print("x_width:", self.x_width)
+            print("y_width:", self.y_width)
 
-        self.x_width = round((self.max_x - self.min_x) / self.resolution)
-        self.y_width = round((self.max_y - self.min_y) / self.resolution)
-        print("x_width:", self.x_width)
-        print("y_width:", self.y_width)
+            self.obstacle_map = np.zeros((self.x_width, self.y_width), dtype=bool).tolist()
 
-        # obstacle map generation
-        self.obstacle_map = [[False for _ in range(self.y_width)]
-                             for _ in range(self.x_width)]
-        for ix in range(self.x_width):
-            x = self.calc_grid_position(ix, self.min_x)
-            for iy in range(self.y_width):
-                y = self.calc_grid_position(iy, self.min_y)
-                for iox, ioy in zip(ox, oy):
-                    d = math.hypot(iox - x, ioy - y)
-                    if d <= self.rr:
-                        self.obstacle_map[ix][iy] = True
-                        break
+            for ix in range(self.x_width):
+                x = self.calc_grid_position(ix, self.min_x)
+                for iy in range(self.y_width):
+                    y = self.calc_grid_position(iy, self.min_y)
+        else:
+            self.min_x = round(min(ox))
+            self.min_y = round(min(oy))
+            self.max_x = round(max(ox))
+            self.max_y = round(max(oy))
+            print("min_x:", self.min_x)
+            print("min_y:", self.min_y)
+            print("max_x:", self.max_x)
+            print("max_y:", self.max_y)
+
+            self.x_width = round((self.max_x - self.min_x) / self.resolution)
+            self.y_width = round((self.max_y - self.min_y) / self.resolution)
+            print("x_width:", self.x_width)
+            print("y_width:", self.y_width)
+
+            # obstacle map generation
+            self.obstacle_map = [[False for _ in range(self.y_width)]
+                                 for _ in range(self.x_width)]
+            for ix in range(self.x_width):
+                x = self.calc_grid_position(ix, self.min_x)
+                for iy in range(self.y_width):
+                    y = self.calc_grid_position(iy, self.min_y)
+                    for iox, ioy in zip(ox, oy):
+                        d = math.hypot(iox - x, ioy - y)
+                        if d <= self.rr:
+                            self.obstacle_map[ix][iy] = True
+                            break
 
     @staticmethod
     def get_motion_model():
@@ -222,133 +247,162 @@ class AStarPlanner:
         motion = [[1, 0, 1],
                   [0, 1, 1],
                   [-1, 0, 1],
-                  [0, -1, 1]]
-        # [-1, -1, math.sqrt(2)],
-        # [-1, 1, math.sqrt(2)],
-        # [1, -1, math.sqrt(2)],
-        # [1, 1, math.sqrt(2)]
+                  [0, -1, 1]]#,
+                  # [-1, -1, math.sqrt(2)],
+                  # [-1, 1, math.sqrt(2)],
+                  # [1, -1, math.sqrt(2)],
+                  # [1, 1, math.sqrt(2)]]
         return motion
 
 
-#
-# def main():
-#     print(__file__ + " start!!")
-#     exp_name = 'FindSurvivors'
-#
-#     plt.rcParams.update({'font.size': 22})
-#
-#     with h5py.File(f'../MRTA/MRTA.hdf5', 'r') as f:
-#         num_robots = np.asarray(f[f'RS_size']).tolist()
-#         num_victims = np.asarray(f[f'Victims_size']).tolist()
-#         starts = np.asarray(f[f'RS_starts']).tolist()
-#         travel2clusters = np.asarray(f[f'RS_travel2clusters']).tolist()
-#         travel2clusters = [[int(x), int(y)] for x, y in travel2clusters]
-#         # unnecessary floor puts cluster center in the wall!!!!!!!!!!!
-#         travel2clusters[1][1] += 1
-#         tasks = []
-#         for i in range(num_robots):
-#             list_t = []
-#             s1 = np.asarray(f[f'RS{i}_Step_1']).tolist()
-#             list_t.append(s1)
-#             s2 = np.asarray(f[f'RS{i}_Step_2']).tolist()
-#             list_t.append(s2)
-#             s3 = np.asarray(f[f'RS{i}_Step_3']).tolist()
-#             list_t.append(s3)
-#             tasks.append(list_t)
-#
-#     file_name = f'../Multi-Agent-Search-and-Rescue/multi_agent_Q_learning_{exp_name}.hdf5'
-#
-#     grid_size = 1.0  # [m]
-#     robot_radius = .50  # [m]
-#     env_map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#                         [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-#                         [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-#                         [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-#                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0]])
-#     # set obstacle positions
-#     oy, ox = np.where(env_map == 1)
-#     # oy = oy
-#
-#     # sy, sx = starts[0]
-#     # gy, gx = travel2clusters[0]
-#     # a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
-#     # rx, ry = a_star.planning(sx, sy, gx, gy)
-#
-#     # if show_animation:  # pragma: no cover
-#     #     plt.plot(ox, oy, ".k")
-#     #     plt.plot(sx, sy, "og")
-#     #     plt.plot(gx, gy, "xb")
-#     #     plt.grid(True)
-#     #     plt.axis("equal")
-#     # rx, ry = a_star.planning(sx, sy, gx, gy)
-#     #
-#     a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
-#     # start and goal position
-#     rescue_team_Traj = [[] for _ in range(num_robots)]
-#     Roles = ['r' for _ in range(num_robots)]
-#     VFDs = [0 for _ in range(num_robots)]
-#
-#     for num in range(num_robots):
-#         temp_task = []
-#         for tsk in tasks[num]:
-#             temp_task += tsk
-#             tasks[num] = temp_task
-#
-#     with h5py.File(file_name, 'r') as f:
-#         for num in range(num_robots):
-#             sy, sx = starts[num]
-#             gx, gy = travel2clusters[num]
-#             for tsk in tasks[num]:
-#
-#                 rx, ry = a_star.planning(sx, sy, gx, gy)
-#                 temp = [[y, x] for x, y in zip(rx[::-1], ry[::-1])]
-#                 for pos in temp:
-#                     rescue_team_Traj[num].append(pos)
-#
-#                 sy, sx = gy, gx
-#                 gy, gx = f[f'victim{tsk}_trajectory'][0]  # [m]
-#
-#     len_max = len(rescue_team_Traj[0])
-#     for num in range(num_robots):
-#         if len(rescue_team_Traj[num]) > len_max:
-#             len_max = len(rescue_team_Traj[num])
-#     for num in range(num_robots):
-#         while len(rescue_team_Traj[num]) < len_max:
-#             rescue_team_Traj[num].append(rescue_team_Traj[num][-1])
-#
-#     victims_Traj = []
-#     with h5py.File(file_name, 'r') as f:
-#         for idx in range(num_victims):
-#             victims_Traj.append(np.asarray(f[f'victim{idx}_trajectory']).tolist())
-#             while len(victims_Traj[idx]) < len_max:
-#                 victims_Traj[idx].append(victims_Traj[idx][-1])
-#             if len(victims_Traj[idx]) > len_max:
-#                 victims_Traj[idx] = victims_Traj[idx][:len_max]
-#     rescue_team_VFD_status = [np.ones((num_robots, 1, 1), dtype=bool) for _ in range(len_max)]
-#
-#     animate(np.asarray(rescue_team_Traj), np.asarray(victims_Traj),
-#             np.asarray(VFDs), rescue_team_VFD_status, Roles, env_map, wait_time=0.5)
-#
-#     if show_animation:  # pragma: no cover
-#         plt.plot(rx, ry, "-r")
-#         plt.pause(0.001)
-#         plt.show()
-#
-#
-# if __name__ == '__main__':
-#     main()
+
+def main():
+    print(__file__ + " start!!")
+    exp_name = 'FindSurvivors'
+
+    plt.rcParams.update({'font.size': 22})
+
+    with h5py.File(f'../MRTA/MRTA.hdf5', 'r') as f:
+        num_robots = np.asarray(f[f'RS_size']).tolist()
+        num_victims = np.asarray(f[f'Victims_size']).tolist()
+        starts = np.asarray(f[f'RS_starts']).tolist()
+        travel2clusters = np.asarray(f[f'RS_travel2clusters']).tolist()
+        travel2clusters = [[int(x), int(y)] for x, y in travel2clusters]
+        # unnecessary floor puts cluster center in the wall!!!!!!!!!!!
+        travel2clusters[1][1] += 1
+        tasks = []
+        for i in range(num_robots):
+            list_t = []
+            s1 = np.asarray(f[f'RS{i}_Step_1']).tolist()
+            list_t.append(s1)
+            s2 = np.asarray(f[f'RS{i}_Step_2']).tolist()
+            list_t.append(s2)
+            s3 = np.asarray(f[f'RS{i}_Step_3']).tolist()
+            list_t.append(s3)
+            tasks.append(list_t)
+
+    file_name = f'../Multi-Agent-Search-and-Rescue/multi_agent_Q_learning_{exp_name}.hdf5'
+
+    grid_size = 1.0  # [m]
+    robot_radius = .50  # [m]
+    env_map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0]])
+
+    # env_map = np.array([[0, 0, 0, 0, 0, 0, 0, 0],
+    #                     [0, 0, 0, 0, 0, 0, 0, 0],
+    #                     [0, 1, 1, 1, 1, 1, 1, 0],
+    #                     [0, 1, 0, 0, 0, 0, 0, 0],
+    #                     [0, 1, 0, 0, 0, 0, 0, 1],
+    #                     [0, 1, 0, 0, 0, 0, 0, 1],
+    #                     [0, 0, 0, 0, 0, 0, 0, 1],
+    #                     [0, 0, 1, 1, 1, 1, 1, 1],
+    #                     [0, 0, 0, 0, 0, 0, 0, 0],
+    #                     [0, 0, 0, 0, 0, 0, 0, 0],
+    #                     [0, 0, 1, 1, 1, 1, 1, 1],
+    #                     [0, 0, 0, 0, 0, 0, 0, 1],
+    #                     [1, 0, 0, 0, 1, 0, 0, 1],
+    #                     [1, 0, 0, 0, 1, 0, 0, 1],
+    #                     [0, 0, 0, 0, 1, 0, 0, 1],
+    #                     [1, 1, 1, 1, 1, 0, 0, 0]])
+
+    # set obstacle positions
+    oy, ox = np.where(env_map == 1)
+    # oy = oy
+
+    # sy, sx = starts[0]
+    # gy, gx = travel2clusters[0]
+    # a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
+    # rx, ry = a_star.planning(sx, sy, gx, gy)
+
+    # if show_animation:  # pragma: no cover
+    #     plt.plot(ox, oy, ".k")
+    #     plt.plot(sx, sy, "og")
+    #     plt.plot(gx, gy, "xb")
+    #     plt.grid(True)
+    #     plt.axis("equal")
+    # rx, ry = a_star.planning(sx, sy, gx, gy)
+    #
+    a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
+    # start and goal position
+    rescue_team_Traj = [[] for _ in range(num_robots)]
+    Roles = [b'r' for _ in range(num_robots)]
+    VFDs = [0 for _ in range(num_robots)]
+
+    for num in range(num_robots):
+        temp_task = []
+        for tsk in tasks[num]:
+            temp_task += tsk
+            tasks[num] = temp_task
+    v0 = Victim(0, [16., 7.], make_span, ['DebrisRemover', 'OxygenCylinder'], capabilities)
+    v1 = Victim(1, [15., 12.], make_span, ['Defuser', 'Manipulator'], capabilities)
+    v2 = Victim(2, [6., 5.], make_span, ['DebrisRemover', 'FireExtinguisher'], capabilities)
+    v3 = Victim(3, [11., 4.], make_span, ['OxygenCylinder', 'Manipulator'], capabilities)
+    v4 = Victim(4, [0., 1.], make_span, ['FirstAids', 'DebrisRemover'], capabilities)
+    v5 = Victim(5, [14., 14.], make_span, ['Manipulator', 'FireExtinguisher'], capabilities)
+    v6 = Victim(6, [14., 12.], make_span, ['FirstAids', 'Manipulator'], capabilities)
+    v7 = Victim(7, [3., 16.], make_span, ['FirstAids', 'Defuser'], capabilities)
+    v8 = Victim(8, [10., 15.], make_span, ['DebrisRemover', 'Defuser'], capabilities)
+    v9 = Victim(9, [0., 12.], make_span, ['FirstAids', 'Manipulator'], capabilities)
+    victims = [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9]
+    with h5py.File(file_name, 'r') as f:
+        for num in range(num_robots):
+            sy, sx = starts[num]
+            gx, gy = travel2clusters[num]
+            for tsk in tasks[num]:
+
+                rx, ry = a_star.planning(sx, sy, gx, gy)
+                temp = [[y, x] for x, y in zip(rx[::-1], ry[::-1])]
+                for pos in temp:
+                    rescue_team_Traj[num].append(pos)
+
+                sy, sx = gy, gx
+                gy, gx = victims[tsk].pos#f[f'victim{tsk}_trajectory'][0]  # [m]
+
+    len_max = len(rescue_team_Traj[0])
+    for num in range(num_robots):
+        if len(rescue_team_Traj[num]) > len_max:
+            len_max = len(rescue_team_Traj[num])
+    for num in range(num_robots):
+        while len(rescue_team_Traj[num]) < len_max:
+            rescue_team_Traj[num].append(rescue_team_Traj[num][-1])
+
+    victims_Traj = []
+    with h5py.File(file_name, 'r') as f:
+        for idx in range(num_victims):
+            victims_Traj.append([victims[idx].pos])
+            # victims_Traj.append(np.asarray(f[f'victim{idx}_trajectory']).tolist())
+            while len(victims_Traj[idx]) < len_max:
+                victims_Traj[idx].append(victims_Traj[idx][-1])
+            if len(victims_Traj[idx]) > len_max:
+                victims_Traj[idx] = victims_Traj[idx][:len_max]
+    rescue_team_VFD_status = [np.ones((num_robots, 1, 1), dtype=bool) for _ in range(len_max)]
+
+    animate(np.asarray(rescue_team_Traj), np.asarray(victims_Traj),
+            np.asarray(VFDs), rescue_team_VFD_status, Roles, env_map, wait_time=0.5)
+
+    if show_animation:  # pragma: no cover
+        plt.plot(rx, ry, "-r")
+        plt.pause(0.001)
+        plt.show()
+
+
+if __name__ == '__main__':
+    main()

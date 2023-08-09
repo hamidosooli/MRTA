@@ -5,7 +5,7 @@ from scipy.optimize import linear_sum_assignment
 
 def make_span_calc(robot_list, task_list):
     for robot in robot_list:
-        robot.travel_cost()
+        # robot.travel_cost()
         for task_id in robot.tasks_init:
             for cap in task_list[task_id].capabilities:
                 if cap in robot.capabilities:
@@ -34,7 +34,7 @@ def time_cost(robot_list, tasks_new, alpha=.2, beta=.25, gamma=.55):
     return cost
 
 
-def final_allocation(robot_list, task_list, tasks_new):
+def VictimAssign(robot_list, task_list, tasks_new):
 
     make_span_calc(robot_list, task_list)
     cost = time_cost(robot_list, tasks_new, alpha=.0, beta=.99, gamma=.01)
@@ -55,11 +55,12 @@ def final_allocation(robot_list, task_list, tasks_new):
     return tasks_new
 
 
-def finalizer(robot_list, task_list_new, task_list, walls_x, walls_y):
+def RobotAssign(robot_list, task_list_new, task_list, walls_x, walls_y):
     grid_size = 1  # [m]
     robot_radius = .5  # [m]
     a_star = AStarPlanner(walls_x, walls_y, grid_size, robot_radius)
     for task in task_list:
+
         for idx, status in enumerate(task.rescued):
             if not status:
                 dist = []
@@ -77,8 +78,13 @@ def finalizer(robot_list, task_list_new, task_list, walls_x, walls_y):
                     if ManhattanDist < temp:
                         temp = ManhattanDist
                         id = task.candidates[idx][candid_id]
-                robot_list[id].tasks_finalized.append(task.id)
-                task.rescued[idx] = True
+                if not np.isnan(id):
+                    robot_list[id].tasks_finalized.append(task.id)
+                    if task.id in robot_list[id].tasks_full:
+                        task.rescued = np.ones_like(task.rescued, dtype=bool).tolist()
+                        break
+                    else:
+                        task.rescued[idx] = True
     for task in task_list_new:
         if all(task.rescued):
             task_list_new.remove(task)
