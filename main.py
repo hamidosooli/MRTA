@@ -66,12 +66,10 @@ print(f'Robot 0 tasks based on full satisfaction of the capabilities: {r0.tasks_
 
 clusters, clusters_coord = Clustering(num_clusters, victims, ox, oy)
 victims_new = ClstrAsgn(robots, victims, clusters, clusters_coord, num_clusters)
-travel2clusters = []
-for robot in robots:
-    travel2clusters.append(robot.pos)
 victims_new = VictimAssign(robots, victims, victims_new)
 victims_new = RobotAssign(robots, victims_new, victims, ox, oy)
-
+for robot in robots:
+    print(f'Robot{robot.id}-->B2:{robot.tasks_init}, B3:{robot.tasks_final}, B4:{robot.tasks_finalized}')
 fig, ax = plt.subplots(1, 1)
 fig.tight_layout()
 plt.rcParams.update({'font.size': 50})

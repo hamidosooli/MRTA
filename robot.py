@@ -17,11 +17,11 @@ class Robot:
         self.tasks = []  # Assignment based on the capabilities
         self.tasks_full = []  # Assignment based on full satisfaction of the victims requirements
 
-        self.tasks_init = []  # Assignment based on the number of tasks in the cluster
+        self.tasks_init = []  # Assignment based on the number of tasks in the cluster (B2)
         self.tasks_init_dist = []  # Assigned task distance to the cluster center
 
-        self.tasks_final = []  # Final Assignment based on the robots busy time
-        self.tasks_finalized = []
+        self.tasks_final = []  # Final Assignment based on the robots busy time (B3)
+        self.tasks_finalized = []  # (B4)
 
         self.make_span = []
         self.abort_time = 0.0
