@@ -112,18 +112,3 @@ def ClstrAsgn(robot_list, task_list, clusters, clusters_coord, num_clusters):
                 del robot.tasks_init_dist[task_id]
 
     return task_list_update
-
-
-def bfs(grid, start, goal):
-    height, width = np.shape(grid)
-    queue = collections.deque([[start]])
-    seen = [start]
-    while queue:
-        path = queue.popleft()
-        x, y = path[-1]
-        if [y, x] == goal:
-            return path
-        for x2, y2 in ((x+1,y), (x-1,y), (x,y+1), (x,y-1)):
-            if 0 <= x2 < width and 0 <= y2 < height and grid[y2][x2] != 1 and [x2, y2] not in seen:
-                queue.append(path + [(x2, y2)])
-                seen.append([x2, y2])
